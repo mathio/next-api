@@ -32,9 +32,10 @@ const getCollectionClient = async (collection) => {
 
 export const getOne = async (collection, id = null) => {
   const client = await getCollectionClient(collection)
-  return await client.findOne({
+  const result = await client.findOne({
     _id: ObjectId(id),
   })
+  return result || {}
 }
 
 export const getAll = async (collection, query, sort = 'created:-1') => {
@@ -67,8 +68,11 @@ export const update = async (collection, data, id) => {
 }
 
 export const remove = async (collection, id) => {
-  const { deletedCount } = await collectionClient.deleteOne({
-    _id: ObjectId(objectId),
+  const client = await getCollectionClient(collection)
+  const { deletedCount } = await client.deleteOne({
+    _id: ObjectId(id),
   })
-  return deletedCount === 1
+  return {
+    deleted: deletedCount === 1,
+  }
 }
