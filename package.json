@@ -1,0 +1,21 @@
+{
+  "name": "next-api",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon test/server",
+    "build": "babel src -d lib",
+    "prettier": "prettier"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.1",
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "nodemon": "^2.0.6",
+    "prettier": "^2.1.2"
+  },
+  "dependencies": {
+    "mongodb": "^3.6.2"
+  }
+}
