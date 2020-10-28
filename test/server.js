@@ -1,6 +1,6 @@
 const { createServer } = require('http')
 const { parse } = require('url')
-const { nextApi } = require('../lib')
+const nextApi = require('../index')
 
 // https://nextjs.org/docs/api-routes/api-middlewares
 const addRequestMiddlewares = (req) => {

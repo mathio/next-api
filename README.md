@@ -55,3 +55,13 @@ Returns updated item.
 Delete one item with specified ObjectID from given collection.
 
 Specify the item ID as query param `?id=<objectId>` or in body as `_id`.
+
+
+## Helper methods
+
+To interact with the API you can use methods:
+
+* `get('/api/<collection>')`
+* `post('/api/<collection>', { ...data })`
+* `put('/api/<collection>', { ...data })`
+* `del('/api/<collection>')`

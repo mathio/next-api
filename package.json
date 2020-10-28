@@ -1,10 +1,10 @@
 {
   "name": "next-api",
   "version": "1.0.0",
-  "main": "lib/index.js",
+  "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon test/server",
+    "dev": "nodemon test/server.js",
     "build": "babel src -d lib",
     "prettier": "prettier"
   },
