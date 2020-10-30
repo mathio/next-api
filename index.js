@@ -1,2 +1,2 @@
-const { api } = require('./lib/api')
-module.exports = api
+const nextApi = require('./lib/api')
+module.exports = nextApi

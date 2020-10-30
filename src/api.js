@@ -1,31 +1,99 @@
 import { getAll, getOne, insert, remove, update } from './mongodb'
+import { getConfig, SECURITY, setConfig } from './config'
+import { auth, getUser } from './auth'
 
-const processData = (method, collection, data) => {
-  const { query, sort, id, body } = data
-  if (method === 'GET' && id) {
-    return getOne(collection, id)
-  } else if (method === 'GET') {
-    return getAll(collection, query, sort)
-  } else if (method === 'POST') {
-    return insert(collection, body)
-  } else if (method === 'PUT') {
-    return update(collection, body, id)
-  } else if (method === 'DELETE') {
-    return remove(collection, id)
+const getUserIdForRead = (userId) => {
+  switch (getConfig().security) {
+    case SECURITY.NONE:
+      return {}
+    case SECURITY.READ_ALL:
+      return {}
+    case SECURITY.USER_SANDBOX:
+      return { userId }
   }
-  return []
 }
 
-export const api = async (req, res) => {
-  const { collection, id, sort, ...query } = req.query
-  const { _id, ...body } = req.body
-
-  const result = await processData(req.method, collection, {
-    query,
-    sort,
-    id: id || _id || null,
-    body,
-  })
-
-  return res.status(200).json(result)
+const getUserIdForWrite = (userId) => {
+  switch (getConfig().security) {
+    case SECURITY.NONE:
+      return {}
+    case SECURITY.READ_ALL:
+      return { userId }
+    case SECURITY.USER_SANDBOX:
+      return { userId }
+  }
 }
+
+const canAccess = (userIdObj) => {
+  if (userIdObj.hasOwnProperty('userId')) {
+    return !!userIdObj.userId
+  }
+  return true
+}
+
+const processData = async (method, collection, data) => {
+  const { query, sort, id, body = {}, userId } = data
+
+  if (method === 'GET') {
+    const userIdObj = getUserIdForRead(userId)
+    if (!canAccess(userIdObj)) {
+      return [403, {}]
+    }
+    if (id) {
+      return [200, await getOne(collection, userIdObj, id)]
+    } else {
+      return [200, await getAll(collection, userIdObj, query, sort)]
+    }
+  } else {
+    const userIdObj = getUserIdForWrite(userId)
+    if (!canAccess(userIdObj)) {
+      return [403, {}]
+    }
+    if (method === 'POST') {
+      return [201, await insert(collection, userId, body)]
+    } else if (method === 'PUT') {
+      return [200, await update(collection, userIdObj, body, id)]
+    } else if (method === 'DELETE') {
+      return [200, await remove(collection, userIdObj, id)]
+    }
+  }
+  return {}
+}
+
+const makeApi = (config = {}) => {
+  setConfig(config)
+
+  return async (req, res) => {
+    const { collection, id, sort, ...query } = req.query
+    const { _id, ...body } = req.body
+
+    if (collection === 'auth') {
+      return auth(req, res)
+    }
+
+    const user = await getUser(req)
+    const data = {
+      query,
+      sort,
+      id: id || _id || null,
+      body,
+      userId: user ? user._id : undefined,
+    }
+
+    try {
+      const [status, result] = await processData(
+        req.method,
+        `a_${collection}`,
+        data
+      )
+      return res.status(status).json(result)
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({
+        error: error.message,
+      })
+    }
+  }
+}
+
+export default makeApi

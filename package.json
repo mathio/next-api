@@ -20,6 +20,8 @@
     "react-dom": "^17.0.1"
   },
   "dependencies": {
-    "mongodb": "^3.6.2"
+    "bcrypt": "^5.0.0",
+    "mongodb": "^3.6.2",
+    "uid-generator": "^2.0.0"
   }
 }

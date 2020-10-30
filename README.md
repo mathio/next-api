@@ -12,8 +12,8 @@ yarn add next-api
 Create file `/pages/api/[collection].js` with content: 
 
 ```
-import { nextApi } from 'next-api'
-export default nextApi
+import nextApi from 'next-api'
+export default nextApi()
 ```
 
 Specify connection string URI in env variable `MONGODB_URL`.
@@ -54,7 +54,16 @@ Returns updated item.
 
 Delete one item with specified ObjectID from given collection.
 
-Specify the item ID as query param `?id=<objectId>` or in body as `_id`.
+Specify the item ID as query param `?id=<objectId>`.
+
+### Auth
+
+* `POST /api/auth` create new user (`email` and `pwd` required) or update current user if authorized
+* `PUT /api/auth` login with `email` and `pwd` in body (generate token and set cookie)
+* `GET /api/auth` get currently logged user (based on cookie)
+* `DELETE /api/auth` logout (delete token and cookie)
+
+When you login a HTTP-only cookie will be created with auth token.
 
 
 ## Helper methods
