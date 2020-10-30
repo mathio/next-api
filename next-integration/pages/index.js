@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import * as fetchMethods from '../../fetch'
-
-const parseCookie = (name) => {
-  const [_, value] = document.cookie.match(new RegExp(`${name}=([^;]+)`)) || []
-  return value && decodeURIComponent(value)
-}
+import { useRouter } from 'next/router'
 
 const prepareBody = (bodyString) => {
   const bodyObj = JSON.parse(bodyString)
@@ -14,7 +10,9 @@ const prepareBody = (bodyString) => {
   return bodyObj
 }
 
-const NextApiClient = () => {
+const NextApiExplorer = () => {
+  const router = useRouter()
+
   const [inProgress, setInProgress] = useState(false)
   const [path, setPath] = useState('/api/')
   const [method, setMethod] = useState('get')
@@ -24,22 +22,28 @@ const NextApiClient = () => {
   const setValue = (setter) => (event) => setter(event.currentTarget.value)
 
   useEffect(() => {
-    const savedPath = parseCookie('next-api-path')
+    const [savedPath, savedMethod, savedBody] = window.location.hash
+      .slice(1)
+      .split('|')
+      .map(decodeURIComponent)
+
     savedPath && setPath(savedPath)
-
-    const savedMethod = parseCookie('next-api-method')
     savedMethod && setMethod(savedMethod)
-
-    const savedBody = parseCookie('next-api-body')
     savedBody && setBody(savedBody)
-  }, [])
+  }, [router.asPath])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
     setInProgress(true)
-    document.cookie = `next-api-path=${encodeURIComponent(path)};`
-    document.cookie = `next-api-method=${encodeURIComponent(method)};`
-    document.cookie = `next-api-body=${encodeURIComponent(body)};`
+
+    const serialized = [
+      encodeURIComponent(path),
+      encodeURIComponent(method),
+      encodeURIComponent(body),
+    ].join('|')
+    // history.pushState(null, '', `#${serialized}`
+    router.push(`#${serialized}`)
+
     try {
       setResult(await fetchMethods[method](path, prepareBody(body)))
     } catch (error) {
@@ -77,7 +81,7 @@ const NextApiClient = () => {
             rows={10}
             value={body}
             onChange={setValue(setBody)}
-            disabled={method === 'get'}
+            disabled={method === 'get' || method === 'del'}
           />
         </p>
         <p>
@@ -93,4 +97,4 @@ const NextApiClient = () => {
   )
 }
 
-export default NextApiClient
+export default NextApiExplorer
