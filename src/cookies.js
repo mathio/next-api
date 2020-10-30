@@ -1,7 +1,7 @@
 import { getConfig } from './config'
 
 export const getAuthCookie = (cookies) => {
-  return cookies && `${cookies[AUTH_COOKIE_NAME]}`.split('|')
+  return cookies && `${cookies[getConfig().authCookieName]}`.split('|')
 }
 
 export const setAuthCookie = (req, res, id, token) => {

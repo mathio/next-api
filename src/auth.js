@@ -18,7 +18,7 @@ export const getUser = async (req) => {
   const [id, token] = getAuthCookie(req.cookies)
   if (id && token && id.length === 24) {
     const userAuthToken = await getOne('user_auth_token', {}, id)
-    if (userAuthToken && compareSync(token, userAuthToken.token)) {
+    if (userAuthToken.token && compareSync(token, userAuthToken.token)) {
       const { pwd, ...user } = await getOne('user', {}, userAuthToken.userId)
       return user
     }
@@ -34,7 +34,7 @@ const verifyUser = async (req) => {
 
 const addUser = async (req) => {
   const { email, pwd, ...body } = req.body
-  if (!email.includes('@') || !pwd) {
+  if (!email || !pwd || !email.includes('@')) {
     return [400, { error: 'set email and pwd' }]
   }
   const users = await getAll('user', {}, { email })
