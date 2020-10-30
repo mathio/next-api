@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
 
 #    strategy:
@@ -24,3 +24,5 @@ jobs:
     - run: yarn install
     - run: yarn build
     - run: yarn ci
+      env:
+        MONGODB_URL: ${{ secrets.MONGODB_URL }}

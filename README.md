@@ -1,6 +1,8 @@
 # next-api
 
-The "no api" api for next.js apps. 
+![Test](https://github.com/mathio/next-api/workflows/Test/badge.svg)
+
+The "no api" api for next.js apps.
 
 
 ## Installation
