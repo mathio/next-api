@@ -56,19 +56,17 @@ describe('auth', () => {
     const put = wrapForTesting(fetchMethods.put)
 
     it('should fail for invalid credentials', async () => {
-      const response = await login(email, 'invalid')
-      const result = await response.json()
+      const { result } = await login(email, 'invalid')
       expect(result.error).toBeDefined()
     })
 
     it('should return user data for valid credentials', async () => {
       const response = await login(email, pwd)
-      authCookie = response.headers.get('set-cookie').match(/^([^;]+)/)[0]
-      const result = await response.json()
-      expect(result._id).toBe(_id)
-      expect(result.email).toBe(email)
-      expect(result.fullName).toBe(fullName)
-      expect(result.pwd).toBeUndefined()
+      authCookie = response.authCookie
+      expect(response.result._id).toBe(_id)
+      expect(response.result.email).toBe(email)
+      expect(response.result.fullName).toBe(fullName)
+      expect(response.result.pwd).toBeUndefined()
     })
   })
 
@@ -124,28 +122,23 @@ describe('auth', () => {
 
   describe('login again', () => {
     it('should fail for invalid credentials (with old password)', async () => {
-      const response = await login(email, pwd)
-      const result = await response.json()
+      const { result } = await login(email, pwd)
       expect(result.error).toBeDefined()
     })
 
     it('should return user data for valid credentials (with new password)', async () => {
       const response = await login(email, newPwd)
-      authCookie = response.headers.get('set-cookie').match(/^([^;]+)/)[0]
-      const result = await response.json()
-
-      expect(result._id).toBe(_id)
-      expect(result.email).toBe(email)
-      expect(result.fullName).toBe(newFullName)
-      expect(result.pwd).toBeUndefined()
+      authCookie = response.authCookie
+      expect(response.result._id).toBe(_id)
+      expect(response.result.email).toBe(email)
+      expect(response.result.fullName).toBe(newFullName)
+      expect(response.result.pwd).toBeUndefined()
     })
 
     it('should create second session for the user', async () => {
       const response = await login(email, newPwd)
-      secondAuthCookie = response.headers.get('set-cookie').match(/^([^;]+)/)[0]
-      const result = await response.json()
-
-      expect(result._id).toBe(_id)
+      secondAuthCookie = response.authCookie
+      expect(response.result._id).toBe(_id)
     })
   })
 
@@ -169,7 +162,6 @@ describe('auth', () => {
     })
 
     it('should not return user data for first session', async () => {
-      console.log(authCookie)
       const get = wrapForTesting(fetchMethods.get, authCookie)
       const result = await get('/api/auth')
       expect(result.error).toBeDefined()

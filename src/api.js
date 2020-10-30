@@ -37,7 +37,7 @@ const processData = async (method, collection, data) => {
   if (method === 'GET') {
     const userIdObj = getUserIdForRead(userId)
     if (!canAccess(userIdObj)) {
-      return [403, {}]
+      return [403, { error: 'forbidden ' }]
     }
     if (id) {
       return [200, await getOne(collection, userIdObj, id)]
@@ -47,7 +47,7 @@ const processData = async (method, collection, data) => {
   } else {
     const userIdObj = getUserIdForWrite(userId)
     if (!canAccess(userIdObj)) {
-      return [403, {}]
+      return [403, { error: 'forbidden ' }]
     }
     if (method === 'POST') {
       return [201, await insert(collection, userId, body)]

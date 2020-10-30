@@ -16,8 +16,8 @@ export const wrapForTesting = (method, cookie) => (path, ...args) => {
   return method(`http://localhost:3000${path}`, ...args)
 }
 
-export const login = (email, pwd) => {
-  return wrapForTesting(fetch)('/api/auth', {
+export const login = async (email, pwd) => {
+  const response = await wrapForTesting(fetch)('/api/auth', {
     method: 'PUT',
     headers: {
       Accept: 'application/json',
@@ -25,4 +25,15 @@ export const login = (email, pwd) => {
     },
     body: JSON.stringify({ email, pwd }),
   })
+  let authCookie = null
+  const setCookieHeader = response.headers.get('set-cookie')
+  if (setCookieHeader) {
+    const cookieMatch = `${setCookieHeader}`.match(/^([^;]+)/)
+    authCookie = cookieMatch ? cookieMatch[0] : null
+  }
+
+  return {
+    authCookie,
+    result: await response.json(),
+  }
 }
