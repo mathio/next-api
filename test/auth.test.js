@@ -28,7 +28,7 @@ describe('auth', () => {
       expect(result.error).toBeDefined()
     })
 
-    it('should create new account email and return user data', async () => {
+    it(`should create new account with email "${email}" and return user data`, async () => {
       const result = await post('/api/auth', { email, pwd, fullName })
       _id = result._id
       expect(result._id.length).toBe(24)
@@ -87,8 +87,11 @@ describe('auth', () => {
 
   describe('edit account', () => {
     let post
+    let get
+
     beforeAll(() => {
       post = wrapForTesting(fetchMethods.post, authCookie)
+      get = wrapForTesting(fetchMethods.get, authCookie)
     })
 
     it('should return updated user data for authorized request', async () => {
@@ -96,6 +99,14 @@ describe('auth', () => {
         fullName: newFullName,
         pwd: newPwd,
       })
+      expect(result._id).toBe(_id)
+      expect(result.email).toBe(email)
+      expect(result.fullName).toBe(newFullName)
+      expect(result.pwd).toBeUndefined()
+    })
+
+    it('should return new user data after it was edited', async () => {
+      const result = await get('/api/auth')
       expect(result._id).toBe(_id)
       expect(result.email).toBe(email)
       expect(result.fullName).toBe(newFullName)

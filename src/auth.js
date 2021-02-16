@@ -2,7 +2,6 @@ import { getAll, getOne, insert, remove, update } from './mongodb'
 import { getAuthCookie, setAuthCookie } from './cookies'
 import UIDGenerator from 'uid-generator'
 import { hashSync, genSaltSync, compareSync } from 'bcrypt'
-import { ObjectId } from 'mongodb'
 const uidgen = new UIDGenerator(512)
 
 const generateToken = async () => {
@@ -34,8 +33,11 @@ const verifyUser = async (req) => {
 
 const addUser = async (req) => {
   const { email, pwd, ...body } = req.body
-  if (!email || !pwd || !email.includes('@')) {
+  if (!email || !pwd) {
     return [400, { error: 'set email and pwd' }]
+  }
+  if (!email.includes('@')) {
+    return [400, { error: 'invalid email' }]
   }
   const users = await getAll('user', {}, { email })
   if (users.length > 0) {
@@ -87,10 +89,7 @@ const addOrEditUser = async (req) => {
 
 const loginUser = async (req, res) => {
   const { email, pwd } = req.body
-  const {
-    'user-agent': userAgent,
-    'x-forwarded-for': xForwardedFor,
-  } = req.headers
+  const { 'user-agent': userAgent, 'x-forwarded-for': xForwardedFor } = req.headers
   const ipAddress = xForwardedFor || req.connection.remoteAddress
 
   const [user] = await getAll('user', {}, { email })

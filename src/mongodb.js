@@ -1,8 +1,5 @@
 import { MongoClient, ObjectId } from 'mongodb'
-
-if (!process.env.MONGODB_URL) {
-  throw new Error('MONGODB_URL not set')
-}
+import { getConfig } from './config'
 
 let mongoClient
 const getClient = async () => {
@@ -20,9 +17,8 @@ const getClient = async () => {
 }
 
 const connect = () => {
-  return MongoClient.connect(process.env.MONGODB_URL, {
-    useUnifiedTopology: true,
-  })
+  const url = getConfig().mongoDbUrl
+  return MongoClient.connect(url, { useUnifiedTopology: true })
 }
 
 const getCollectionClient = async (collection) => {
@@ -30,22 +26,17 @@ const getCollectionClient = async (collection) => {
   return await client.db().collection(collection)
 }
 
-export const getOne = async (collection, userId, id) => {
+export const getOne = async (collection, authObj, id) => {
   const client = await getCollectionClient(collection)
-  const result = await client.findOne({ _id: ObjectId(id), ...userId })
+  const result = await client.findOne({ _id: ObjectId(id), ...authObj })
   return result || {}
 }
 
-export const getAll = async (
-  collection,
-  userId,
-  query,
-  sort = 'created:-1'
-) => {
+export const getAll = async (collection, authObj, query, sort = 'created:-1') => {
   const client = await getCollectionClient(collection)
   const [sortKey, sortDirection] = `${sort}:1`.split(':')
   return await client
-    .find({ ...query, ...userId })
+    .find({ ...query, ...authObj })
     .sort({ [sortKey]: parseInt(sortDirection, 10) })
     .collation({ locale: 'en_US', numericOrdering: true })
     .toArray()
@@ -63,22 +54,22 @@ export const insert = async (collection, userId, data) => {
   return ops[0]
 }
 
-export const update = async (collection, userId, data, id) => {
+export const update = async (collection, authObj, data, id) => {
   const client = await getCollectionClient(collection)
   const values = { ...data, updated: Date.now() }
   const { value } = await client.findOneAndUpdate(
-    { _id: ObjectId(id), ...userId },
+    { _id: ObjectId(id), ...authObj },
     { $set: values },
     { returnOriginal: false }
   )
   return value || {}
 }
 
-export const remove = async (collection, userId, id) => {
+export const remove = async (collection, authObj, id) => {
   const client = await getCollectionClient(collection)
   const { deletedCount } = await client.deleteOne({
     _id: ObjectId(id),
-    ...userId,
+    ...authObj,
   })
   return {
     deleted: deletedCount === 1,

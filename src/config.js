@@ -9,6 +9,7 @@ const AUTH_COOKIE_NAME = 'next-api-auth'
 const defaultConfig = {
   authCookieName: AUTH_COOKIE_NAME,
   security: SECURITY.USER_SANDBOX,
+  mongoDbUrl: process.env.MONGODB_URL || null,
 }
 
 export const setConfig = (config) => {
