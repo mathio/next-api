@@ -7,10 +7,12 @@ The "no api" api for Next.js apps.
 ## Installation
 
 ```shell
-yarn add next-api
+yarn add https://github.com/mathio/next-api
 ```
 
-Create file `/pages/api/[collection].js` with content:
+### Server-side
+
+Installing will automatically create file `/pages/api/[collection].js` with content:
 
 ```javascript
 import nextApi from 'next-api'
@@ -19,13 +21,37 @@ export default nextApi()
 
 Specify connection string URI in env variable `MONGODB_URL`.
 
-Done!
+### Client-side
+
+Use helper methods to make requests to your API endpoints:
+
+```javascript
+import { get, post, put, del } from 'next-api/fetch'
+
+await post('/api/auth', { email: 'user@example.com', pwd: 'password' }) // sign up
+await put('/api/auth', { email: 'user@example.com', pwd: 'password' }) // login
+
+const { _id } = await post('/api/card', { title: 'Hello!' }) // create new card
+await put(`/api/card?id=${id}`, { title: 'Bye' }) // edit card (via query param)
+await put('/api/card', { _id, title: 'Goodbye' }) // edit card (via _id in payload)
+const cards = await get('/api/card') // get all cards
+console.log(cards) // array of 1 object
+await del(`/api/card?id=${_id}`) // delete card
+
+await del('/api/auth') // logout
+```
+
+This works in browser as it takes care of cookies automatically. If you want to make API requests server-side you will 
+need to use `fetch` and persist auth cookie manually (named `"next-api-auth"` by default).
 
 ## Advanced usage
 
 You can pass config object to `nextApi()`:
 
 ```javascript
+import nextApi from 'next-api'
+import { SECURITY } from 'next-api/config'
+
 export default nextApi({
   mongoDbUrl: '<connection string URI>', // instead of MONGODB_URL env variable
   authCookieName: '<custom name>', // cookie name used for auth (defaults to "next-api-auth")

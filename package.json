@@ -8,7 +8,9 @@
     "ci": "start-server-and-test dev http://localhost:3000 test",
     "test": "node test/setup.js && jest --verbose",
     "build": "babel src -d lib",
-    "prettier": "prettier --write . --ignore-path .gitignore"
+    "build:watch": "yanr build --watch",
+    "prettier": "prettier --write . --ignore-path .gitignore",
+    "postinstall": "node scripts/postinstall.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.1",

@@ -22,7 +22,7 @@ const processData = async (method, collection, data) => {
     }
   } else {
     const authObj = getAuthObjForWrite(userId)
-    if (!getConfig().security !== SECURITY.NONE && !userId) {
+    if (getConfig().security !== SECURITY.NONE && !userId) {
       return [403, { error: 'forbidden' }]
     }
     if (method === 'POST') {
