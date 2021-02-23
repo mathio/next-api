@@ -2,6 +2,7 @@
   "name": "@mathio28/next-api",
   "version": "0.0.0",
   "main": "index.js",
+  "types": "index.d.ts",
   "license": "MIT",
   "author": "matej@lednicky.name",
   "homepage": "https://github.com/mathio/next-api",

@@ -1,7 +1,7 @@
 # next-api
 
 ![Test](https://github.com/mathio/next-api/workflows/Test/badge.svg) 
-[![npm version](https://badge.fury.io/js/%40mathio28%2Fnext-api.svg)](https://www.npmjs.com/package/@mathio28/next-api)
+[![npm version](https://img.shields.io/npm/v/@mathio28/next-api?color=brightgreen)](https://www.npmjs.com/package/@mathio28/next-api)
 
 The "no api" api for Next.js apps.
 
@@ -10,6 +10,8 @@ The "no api" api for Next.js apps.
 ```shell
 yarn add @mathio28/next-api
 ```
+
+## Usage
 
 ### Server-side
 
@@ -27,7 +29,7 @@ Specify connection string URI in env variable `MONGODB_URL`.
 Use helper methods to make requests to your API endpoints:
 
 ```javascript
-import { get, post, put, del } from 'next-api/fetch'
+import { get, post, put, del } from '@mathio28/next-api/fetch'
 
 await post('/api/auth', { email: 'user@example.com', pwd: 'password' }) // sign up
 await put('/api/auth', { email: 'user@example.com', pwd: 'password' }) // login
@@ -45,12 +47,43 @@ await del('/api/auth') // logout
 This works in browser as it takes care of cookies automatically. If you want to make API requests server-side you will 
 need to use `fetch` and persist auth cookie manually (named `"next-api-auth"` by default).
 
+### Client-side with Typescript
+
+The library is written in JavaScript but it provides typings. In a Typescript project you can provide an interface of the object to get type validation:
+
+```typescript
+import { get, post } from '@mathio28/next-api/fetch'
+
+interface Card {
+  title: string
+  text: string
+}
+
+const allCards = await get<Card[]>('/api/card')
+allCards.forEach(card => {
+  card.title
+  card.text
+  card._id
+  card.userId
+  card.created
+  card.updated // optional
+  card.acl_read
+  card.acl_write
+  card.tag // TS2339: Property 'tag' does not exist on type 'Card'.
+})
+
+await post<Card>('/api/card', {title: 'bar', text: 'foo', tag: 1})
+// TS2345: Argument of type '{ title: string; text: string; tag: number; }' is not assignable to parameter of type 'Card'.
+//   Object literal may only specify known properties, and 'tag' does not exist in type 'Card'.
+```
+
+
 ## Advanced usage
 
 You can pass config object to `nextApi()`:
 
 ```javascript
-import nextApi from 'next-api'
+import nextApi from '@mathio28/next-api'
 import { SECURITY } from 'next-api/config'
 
 export default nextApi({
