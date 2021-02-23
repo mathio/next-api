@@ -7,7 +7,7 @@ The "no api" api for Next.js apps.
 ## Installation
 
 ```shell
-yarn add https://github.com/mathio/next-api
+yarn add @mathio28/next-api
 ```
 
 ### Server-side

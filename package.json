@@ -1,6 +1,6 @@
 {
   "name": "@mathio28/next-api",
-  "version": "0.0.0",
+  "version": "1.2.0",
   "main": "index.js",
   "license": "MIT",
   "author": "matej@lednicky.name",
@@ -9,6 +9,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mathio/next-api.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "dev": "next dev ./next-integration",
