@@ -5,3 +5,7 @@ yarn-error.log
 next-integration/
 .github/
 test/
+src/
+.babelrc
+.prettierrc
+.releaserc

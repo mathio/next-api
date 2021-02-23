@@ -27,8 +27,8 @@ if (!modulePath.includes('/node_modules/')) {
 }
 
 const hostProjectDir = modulePath.replace(/\/node_modules\/.*$/, '')
-const moduleSrcDir = path.resolve(__dirname, '../src')
-const installationSourceFile = path.join(moduleSrcDir, '[collection].js')
+const moduleSrcDir = path.resolve(__dirname, '../install')
+const installationSourceFile = path.join(moduleSrcDir, 'template.js')
 
 log('Installing next-api')
 log('Destination:', hostProjectDir)
