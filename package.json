@@ -1,8 +1,15 @@
 {
-  "name": "next-api",
-  "version": "1.0.0",
+  "name": "@mathio28/next-api",
+  "version": "0.0.0",
   "main": "index.js",
   "license": "MIT",
+  "author": "matej@lednicky.name",
+  "homepage": "https://github.com/mathio/next-api",
+  "description": "The \"no api\" api for Next.js apps.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mathio/next-api.git"
+  },
   "scripts": {
     "dev": "next dev ./next-integration",
     "ci": "start-server-and-test dev http://localhost:3000 test",
@@ -29,6 +36,7 @@
   "dependencies": {
     "bcrypt": "^5.0.0",
     "mongodb": "^3.6.2",
+    "semantic-release": "^17.3.9",
     "uid-generator": "^2.0.0"
   }
 }
