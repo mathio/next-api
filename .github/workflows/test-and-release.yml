@@ -5,7 +5,7 @@ on:
     branches: [master]
 
 jobs:
-  test:
+  test-and-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,20 +21,6 @@ jobs:
       - run: yarn ci
         env:
           MONGODB_URL: ${{ secrets.MONGODB_URL }}
-  release:
-    runs-on: ubuntu-latest
-    needs: [ test ]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-      - uses: actions/cache@v2
-        with:
-          path: |
-            **/node_modules
-            ~/.cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-      - run: yarn install --frozen-lockfile
-      - run: yarn build
       - run: yarn semantic-release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
