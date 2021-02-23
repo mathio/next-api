@@ -1,6 +1,7 @@
 # next-api
 
-![Test](https://github.com/mathio/next-api/workflows/Test/badge.svg)
+![Test](https://github.com/mathio/next-api/workflows/Test/badge.svg) 
+[![npm version](https://badge.fury.io/js/%40mathio28%2Fnext-api.svg)](https://www.npmjs.com/package/@mathio28/next-api)
 
 The "no api" api for Next.js apps.
 
