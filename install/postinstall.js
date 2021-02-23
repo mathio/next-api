@@ -19,16 +19,15 @@ const log = (...params) => console.log('-----', ...params)
 
 const installPaths = ['./src/pages', './pages']
 
-const modulePath = process.mainModule.paths[0]
+const hostProjectDir = process.env.INIT_CWD
+const moduleDir = path.resolve(__dirname, '..')
 
-if (!modulePath.includes('/node_modules/')) {
+if (hostProjectDir === moduleDir) {
   log('Not installing as a dependency, API installation skipped')
   return
 }
 
-const hostProjectDir = modulePath.replace(/\/node_modules\/.*$/, '')
-const moduleSrcDir = path.resolve(__dirname, '../install')
-const installationSourceFile = path.join(moduleSrcDir, 'template.js')
+const installationSourceFile = path.join(moduleDir, './install/template.js')
 
 log('Installing next-api')
 log('Destination:', hostProjectDir)
