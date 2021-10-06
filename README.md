@@ -11,6 +11,11 @@ The "no api" api for Next.js apps.
 yarn add @mathio28/next-api
 ```
 
+## Requirements
+
+* node >= 12
+* next.js >= 10
+
 ## Usage
 
 ### Server-side

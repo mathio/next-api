@@ -11,6 +11,9 @@
     "type": "git",
     "url": "git+https://github.com/mathio/next-api.git"
   },
+  "engines": {
+    "node": "12"
+  },
   "publishConfig": {
     "access": "public"
   },

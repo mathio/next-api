@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import * as fetchMethods from '../../fetch'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 
 const prepareBody = (bodyString) => {
   const bodyObj = JSON.parse(bodyString)
@@ -8,6 +9,44 @@ const prepareBody = (bodyString) => {
     throw new Error('invalid body')
   }
   return bodyObj
+}
+
+const buildUrl = (path, method, body = '{}') => {
+  const serialized = [encodeURIComponent(path), encodeURIComponent(method), encodeURIComponent(body)].join('|')
+  return `#${serialized}`
+}
+
+const logoutUrl = buildUrl('/api/auth', 'del')
+const signupUrl = buildUrl('/api/auth', 'post', '{"email":"","pwd":""}')
+const loginUrl = buildUrl('/api/auth', 'put', '{"email":"","pwd":""}')
+
+const AuthInformation = ({ email }) => {
+  if (email === null) {
+    return <p>...</p>
+  } else if (email) {
+    return (
+      <p>
+        Logged in as: {email}{' '}
+        <Link href={logoutUrl}>
+          <a>Logout</a>
+        </Link>
+      </p>
+    )
+  } else {
+    return (
+      <p>
+        Not logged in.{' '}
+        <Link href={signupUrl}>
+          <a>Sign up</a>
+        </Link>{' '}
+        or{' '}
+        <Link href={loginUrl}>
+          <a>login</a>
+        </Link>
+        .
+      </p>
+    )
+  }
 }
 
 const NextApiExplorer = () => {
@@ -43,9 +82,7 @@ const NextApiExplorer = () => {
     event.preventDefault()
     setInProgress(true)
 
-    const serialized = [encodeURIComponent(path), encodeURIComponent(method), encodeURIComponent(body)].join('|')
-    // history.pushState(null, '', `#${serialized}`
-    router.push(`#${serialized}`)
+    router.push(buildUrl(path, method, body))
 
     try {
       setResult(await fetchMethods[method](path, prepareBody(body)))
@@ -63,7 +100,7 @@ const NextApiExplorer = () => {
   return (
     <>
       <h1>next-api</h1>
-      {userEmail ? <p>Logged in as: {userEmail}</p> : <p>Not logged in</p>}
+      <AuthInformation email={userEmail} />
       <form onSubmit={handleSubmit}>
         <p>
           <select value={method} onChange={setValue(setMethod)}>
