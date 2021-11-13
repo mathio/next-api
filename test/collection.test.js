@@ -26,11 +26,11 @@ describe('collections', () => {
       },
     ]
 
-    it('should create new documents', async () => {
-      for (const [index, item] of documents.entries()) {
-        documents[index]._id = (await user.post('/api/post', item))._id
-      }
-
+    it.only('should create new documents', async () => {
+      documents[0]._id = (await user.post('/api/post', documents[0]))._id
+      ;(await user.post('/api/post', [documents[1], documents[2]])).forEach(({ _id }, index) => {
+        documents[index + 1]._id = _id
+      })
       ;(await user.get('/api/post?sort=created')).forEach((item, index) => {
         expect(item).toMatchObject({ ...documents[index], userId: user.id })
         expect(item.created).toBeDefined()

@@ -10,6 +10,38 @@ const getAuthObjForWrite = (userId) => {
   return { acl_write: { $in: [userId, 'all'] } }
 }
 
+const objectIsArray = (obj) => {
+  const keys = Object.keys(obj).map((i) => parseInt(i, 10))
+  const arr = Array.from(Array(keys.length).keys())
+  return JSON.stringify(keys) === JSON.stringify(arr)
+}
+
+const saveItem = async (collection, item, userId) => {
+  if (!item.acl_read || item.acl_read.length === 0) {
+    switch (getConfig().security) {
+      case SECURITY.NONE:
+      case SECURITY.READ_ALL:
+        item.acl_read = ['all']
+        break
+      case SECURITY.USER_SANDBOX:
+        item.acl_read = [userId]
+        break
+    }
+  }
+  if (!item.acl_write || item.acl_write.length === 0) {
+    switch (getConfig().security) {
+      case SECURITY.NONE:
+        item.acl_write = ['all']
+        break
+      case SECURITY.READ_ALL:
+      case SECURITY.USER_SANDBOX:
+        item.acl_write = [userId]
+        break
+    }
+  }
+  return await insert(collection, userId, item)
+}
+
 const processData = async (method, collection, data) => {
   const { query, sort, id, body = {}, userId } = data
 
@@ -26,29 +58,16 @@ const processData = async (method, collection, data) => {
       return [403, { error: 'forbidden' }]
     }
     if (method === 'POST') {
-      if (!body.acl_read || body.acl_read.length === 0) {
-        switch (getConfig().security) {
-          case SECURITY.NONE:
-          case SECURITY.READ_ALL:
-            body.acl_read = ['all']
-            break
-          case SECURITY.USER_SANDBOX:
-            body.acl_read = [userId]
-            break
+      if (objectIsArray(body)) {
+        const saved = []
+        const keys = Object.keys(body)
+        for (let i = 0; i < keys.length; i += 1) {
+          saved.push(await saveItem(collection, body[keys[i]], userId))
         }
+        return [200, saved]
+      } else {
+        return [200, await saveItem(collection, body, userId)]
       }
-      if (!body.acl_write || body.acl_write.length === 0) {
-        switch (getConfig().security) {
-          case SECURITY.NONE:
-            body.acl_write = ['all']
-            break
-          case SECURITY.READ_ALL:
-          case SECURITY.USER_SANDBOX:
-            body.acl_write = [userId]
-            break
-        }
-      }
-      return [201, await insert(collection, userId, body)]
     } else if (method === 'PUT') {
       return [200, await update(collection, authObj, body, id)]
     } else if (method === 'DELETE') {
