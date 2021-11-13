@@ -1,4 +1,4 @@
-import { getAll, getOne, insert, remove, update } from './mongodb'
+import { getAll, getOne, insert, remove, removeMany, update } from './mongodb'
 import { getConfig, SECURITY, setConfig } from './config'
 import { auth, getUser } from './auth'
 
@@ -71,7 +71,11 @@ const processData = async (method, collection, data) => {
     } else if (method === 'PUT') {
       return [200, await update(collection, authObj, body, id)]
     } else if (method === 'DELETE') {
-      return [200, await remove(collection, authObj, id)]
+      if (Array.isArray(id)) {
+        return [200, await removeMany(collection, authObj, id)]
+      } else {
+        return [200, await remove(collection, authObj, id)]
+      }
     }
   }
   return {}

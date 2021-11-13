@@ -26,7 +26,7 @@ describe('collections', () => {
       },
     ]
 
-    it.only('should create new documents', async () => {
+    it('should create new documents', async () => {
       documents[0]._id = (await user.post('/api/post', documents[0]))._id
       ;(await user.post('/api/post', [documents[1], documents[2]])).forEach(({ _id }, index) => {
         documents[index + 1]._id = _id
@@ -67,13 +67,23 @@ describe('collections', () => {
 
     it('should delete document', async () => {
       const result = await user.del(`/api/post?id=${documents[2]._id}`)
-      expect(result).toMatchObject({ deleted: true })
+      expect(result).toMatchObject({ deleted: 1 })
     })
 
     it('should return remaining documents', async () => {
       const result = await user.get('/api/post?sort=created')
       expect(result[0]).toMatchObject(documents[0])
       expect(result[1]).toMatchObject(documents[1])
+    })
+
+    it('should delete remaining documents', async () => {
+      const result = await user.del(`/api/post`, { _id: documents.map(({ _id }) => _id) })
+      expect(result).toMatchObject({ deleted: 2 })
+    })
+
+    it('should return zero documents', async () => {
+      const result = await user.get('/api/post')
+      expect(result.length).toBe(0)
     })
   })
 })

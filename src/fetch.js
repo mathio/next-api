@@ -16,4 +16,4 @@ export const post = (path, body) => request(path, 'post', body)
 
 export const put = (path, body) => request(path, 'put', body)
 
-export const del = (path) => request(path, 'delete')
+export const del = (path, body) => request(path, 'delete', body)

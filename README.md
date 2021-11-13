@@ -1,6 +1,6 @@
 # next-api
 
-![Test](https://github.com/mathio/next-api/workflows/Test/badge.svg) 
+[![Test](https://github.com/mathio/next-api/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/mathio/next-api/actions/workflows/test-and-release.yml) 
 [![npm version](https://img.shields.io/npm/v/@mathio28/next-api?color=brightgreen)](https://www.npmjs.com/package/@mathio28/next-api)
 
 The "no api" api for Next.js apps.
@@ -123,7 +123,9 @@ When ID query param is specified `?id=<objectId>` it will return only the item, 
 
 Create a new item in given collection. Request body sent as JSON is saved.
 
-Returns created item.
+If request body is array multiple objects will be created (one for each object in the array). 
+
+Returns created item(s).
 
 ### PUT `/api/<collection>`
 
@@ -137,7 +139,9 @@ Returns updated item.
 
 Delete one item with specified ObjectID from given collection.
 
-Specify the item ID as query param `?id=<objectId>`.
+Specify the item ID as query param `?id=<objectId>` or in body as `_id`. Send `_id` as array to delete multiple objects.
+
+Returns number of deleted items.
 
 ### Auth
 

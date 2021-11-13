@@ -122,13 +122,7 @@ const NextApiExplorer = () => {
         <p>
           Body:
           <br />
-          <textarea
-            cols={50}
-            rows={10}
-            value={body}
-            onChange={setValue(setBody)}
-            disabled={method === 'get' || method === 'del'}
-          />
+          <textarea cols={50} rows={10} value={body} onChange={setValue(setBody)} disabled={method === 'get'} />
         </p>
         <p>
           <button type="submit">submit</button>

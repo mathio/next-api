@@ -72,6 +72,17 @@ export const remove = async (collection, authObj, id) => {
     ...authObj,
   })
   return {
-    deleted: deletedCount === 1,
+    deleted: deletedCount,
+  }
+}
+
+export const removeMany = async (collection, authObj, ids) => {
+  const client = await getCollectionClient(collection)
+  const { deletedCount } = await client.deleteMany({
+    _id: { $in: ids.map((id) => ObjectId(id)) },
+    ...authObj,
+  })
+  return {
+    deleted: deletedCount,
   }
 }
