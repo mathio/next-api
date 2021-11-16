@@ -1,3 +1,4 @@
+require('dotenv').config()
 const MongoClient = require('mongodb')
 
 if (!process.env.MONGODB_URL) {

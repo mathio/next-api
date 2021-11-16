@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 export const SECURITY = {
   NONE: 0, // anyone can get, edit and delete all documents
   USER_SANDBOX: 1, // user can get, edit and delete only the documents they created

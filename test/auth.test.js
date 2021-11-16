@@ -29,7 +29,7 @@ describe('auth', () => {
       expect(result.error).toBeDefined()
     })
 
-    it(`should create new account with email "${email}" and return user data`, async () => {
+    it('should create new account and return user data', async () => {
       const result = await post(API_PATH, { email, pwd, fullName })
       _id = result._id
       expect(result._id.length).toBe(24)
