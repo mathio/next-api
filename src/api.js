@@ -1,4 +1,4 @@
-import { getAll, getOne, insert, remove, removeMany, update } from './mongodb'
+import { getAll, getOne, insert, remove, removeMany, update, updateOrCreate } from './mongodb'
 import { getConfig, SECURITY, setConfig } from './config'
 import { auth, getUser } from './auth'
 
@@ -16,7 +16,7 @@ const objectIsArray = (obj) => {
   return JSON.stringify(keys) === JSON.stringify(arr)
 }
 
-const saveItem = async (collection, item, userId) => {
+const addAclToItem = (item, userId) => {
   if (!item.acl_read || item.acl_read.length === 0) {
     switch (getConfig().security) {
       case SECURITY.NONE:
@@ -39,15 +39,19 @@ const saveItem = async (collection, item, userId) => {
         break
     }
   }
-  return await insert(collection, userId, item)
+  return item
 }
 
 const processData = async (method, collection, data) => {
   const { query, sort, id, body = {}, userId } = data
 
+  const isSingletonCollection = collection.startsWith('data_one-')
+
   if (method === 'GET') {
     const authObj = getAuthObjForRead(userId)
-    if (id) {
+    if (isSingletonCollection) {
+      return [200, await getOne(collection, authObj)]
+    } else if (id) {
       return [200, await getOne(collection, authObj, id)]
     } else {
       return [200, await getAll(collection, authObj, query, sort)]
@@ -58,20 +62,28 @@ const processData = async (method, collection, data) => {
       return [403, { error: 'forbidden' }]
     }
     if (method === 'POST') {
-      if (objectIsArray(body)) {
+      if (isSingletonCollection) {
+        return [400, { error: 'singleton, use put instead' }]
+      } else if (objectIsArray(body)) {
         const saved = []
         const keys = Object.keys(body)
         for (let i = 0; i < keys.length; i += 1) {
-          saved.push(await saveItem(collection, body[keys[i]], userId))
+          saved.push(await insert(collection, userId, addAclToItem(body[keys[i]], userId)))
         }
         return [200, saved]
       } else {
-        return [200, await saveItem(collection, body, userId)]
+        return [200, await insert(collection, userId, addAclToItem(body, userId))]
       }
     } else if (method === 'PUT') {
-      return [200, await update(collection, authObj, body, id)]
+      if (isSingletonCollection) {
+        return [200, await updateOrCreate(collection, authObj, addAclToItem(body, userId))]
+      } else {
+        return [200, await update(collection, authObj, body, id)]
+      }
     } else if (method === 'DELETE') {
-      if (Array.isArray(id)) {
+      if (isSingletonCollection) {
+        return [400, { error: 'singleton, use put instead' }]
+      } else if (Array.isArray(id)) {
         return [200, await removeMany(collection, authObj, id)]
       } else {
         return [200, await remove(collection, authObj, id)]

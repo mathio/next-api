@@ -2,6 +2,7 @@ import { login, wrapForTesting } from './utils'
 import * as fetchMethods from '../src/fetch'
 
 describe('auth', () => {
+  const API_PATH = '/api/auth'
   let _id
   let authCookie
   let secondAuthCookie
@@ -19,17 +20,17 @@ describe('auth', () => {
     const post = wrapForTesting(fetchMethods.post)
 
     it('should require email and password', async () => {
-      const result = await post('/api/auth', {})
+      const result = await post(API_PATH, {})
       expect(result.error).toBeDefined()
     })
 
     it('should validate email', async () => {
-      const result = await post('/api/auth', { email: 'dev', pwd: 'dev' })
+      const result = await post(API_PATH, { email: 'dev', pwd: 'dev' })
       expect(result.error).toBeDefined()
     })
 
     it(`should create new account with email "${email}" and return user data`, async () => {
-      const result = await post('/api/auth', { email, pwd, fullName })
+      const result = await post(API_PATH, { email, pwd, fullName })
       _id = result._id
       expect(result._id.length).toBe(24)
       expect(result.email).toBe(email)
@@ -38,7 +39,7 @@ describe('auth', () => {
     })
 
     it('should not allow duplicate emails', async () => {
-      const result = await post('/api/auth', { email, pwd, fullName })
+      const result = await post(API_PATH, { email, pwd, fullName })
       expect(result.error).toBeDefined()
     })
   })
@@ -47,7 +48,7 @@ describe('auth', () => {
     const get = wrapForTesting(fetchMethods.get)
 
     it('should fail for unauthorized request', async () => {
-      const result = await get('/api/auth')
+      const result = await get(API_PATH)
       expect(result.error).toBeDefined()
     })
   })
@@ -77,7 +78,7 @@ describe('auth', () => {
     })
 
     it('should return user data for authorized request', async () => {
-      const result = await get('/api/auth')
+      const result = await get(API_PATH)
       expect(result._id).toBe(_id)
       expect(result.email).toBe(email)
       expect(result.fullName).toBe(fullName)
@@ -95,7 +96,7 @@ describe('auth', () => {
     })
 
     it('should return updated user data for authorized request', async () => {
-      const result = await post('/api/auth', {
+      const result = await post(API_PATH, {
         fullName: newFullName,
         pwd: newPwd,
       })
@@ -106,7 +107,7 @@ describe('auth', () => {
     })
 
     it('should return new user data after it was edited', async () => {
-      const result = await get('/api/auth')
+      const result = await get(API_PATH)
       expect(result._id).toBe(_id)
       expect(result.email).toBe(email)
       expect(result.fullName).toBe(newFullName)
@@ -121,12 +122,12 @@ describe('auth', () => {
     })
 
     it('should logout the user', async () => {
-      const result = await del('/api/auth')
+      const result = await del(API_PATH)
       expect(result).toEqual({})
     })
 
     it('should not logout with invalid auth cookie', async () => {
-      const result = await del('/api/auth')
+      const result = await del(API_PATH)
       expect(result.error).toBeDefined()
     })
   })
@@ -156,31 +157,31 @@ describe('auth', () => {
   describe('get user details with multiple sessions', () => {
     it('should return user data for first session', async () => {
       const get = wrapForTesting(fetchMethods.get, authCookie)
-      const result = await get('/api/auth')
+      const result = await get(API_PATH)
       expect(result._id).toBe(_id)
     })
 
     it('should return user data for second session', async () => {
       const get = wrapForTesting(fetchMethods.get, secondAuthCookie)
-      const result = await get('/api/auth')
+      const result = await get(API_PATH)
       expect(result._id).toBe(_id)
     })
 
     it('should logout first session', async () => {
       const del = wrapForTesting(fetchMethods.del, authCookie)
-      const result = await del('/api/auth')
+      const result = await del(API_PATH)
       expect(result).toEqual({})
     })
 
     it('should not return user data for first session', async () => {
       const get = wrapForTesting(fetchMethods.get, authCookie)
-      const result = await get('/api/auth')
+      const result = await get(API_PATH)
       expect(result.error).toBeDefined()
     })
 
     it('should return user data for second session', async () => {
       const get = wrapForTesting(fetchMethods.get, secondAuthCookie)
-      const result = await get('/api/auth')
+      const result = await get(API_PATH)
       expect(result._id).toBe(_id)
     })
   })

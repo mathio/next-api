@@ -28,7 +28,7 @@ const getCollectionClient = async (collection) => {
 
 export const getOne = async (collection, authObj, id) => {
   const client = await getCollectionClient(collection)
-  const result = await client.findOne({ _id: ObjectId(id), ...authObj })
+  const result = await client.findOne({ ...authObj, ...(id ? { _id: ObjectId(id) } : {}) })
   return result || {}
 }
 
@@ -62,6 +62,14 @@ export const update = async (collection, authObj, data, id) => {
     { $set: values },
     { returnOriginal: false }
   )
+  return value || {}
+}
+
+export const updateOrCreate = async (collection, authObj, data) => {
+  const client = await getCollectionClient(collection)
+  const item = await client.findOne(authObj)
+  const values = { ...data, created: item ? item.created : Date.now(), updated: Date.now() }
+  const { value } = await client.findOneAndUpdate(authObj, { $set: values }, { returnOriginal: false, upsert: true })
   return value || {}
 }
 

@@ -1,6 +1,7 @@
 import { prepareUser } from './utils'
 
 describe('acl', () => {
+  const API_PATH = '/api/post'
   let userTom
   let userJerry
   let documents
@@ -33,16 +34,16 @@ describe('acl', () => {
 
   it('Jerry creates "post" documents', async () => {
     for (const [index, item] of documents.entries()) {
-      documents[index]._id = (await userJerry.post('/api/post', item))._id
+      documents[index]._id = (await userJerry.post(API_PATH, item))._id
     }
 
-    ;(await userJerry.get('/api/post?sort=created')).forEach((item, index) => {
+    ;(await userJerry.get(`${API_PATH}?sort=created`)).forEach((item, index) => {
       expect(item._id).toBe(documents[index]._id)
     })
   })
 
   it("Tom can see only Jerry's public documents", async () => {
-    const results = await userTom.get('/api/post?sort=created')
+    const results = await userTom.get(`${API_PATH}?sort=created`)
     expect(results.length).toBe(2)
 
     expect(results[0].tag).toBe('public-read')
@@ -55,23 +56,23 @@ describe('acl', () => {
   })
 
   it("Tom can not edit Jerry's private document", async () => {
-    const result = await userTom.put(`/api/post?id=${documents[0]._id}`, { title: 'Bye' })
+    const result = await userTom.put(`${API_PATH}?id=${documents[0]._id}`, { title: 'Bye' })
     expect(result).toEqual({})
   })
 
   it("Tom can not edit Jerry's public read-only document", async () => {
-    const result = await userTom.put(`/api/post?id=${documents[1]._id}`, { title: 'Bye' })
+    const result = await userTom.put(`${API_PATH}?id=${documents[1]._id}`, { title: 'Bye' })
     expect(result).toEqual({})
   })
 
   it("Tom can edit Jerry's public read-write document", async () => {
-    const result = await userTom.put(`/api/post?id=${documents[2]._id}`, { title: 'Bye' })
+    const result = await userTom.put(`${API_PATH}?id=${documents[2]._id}`, { title: 'Bye' })
     expect(result._id).toBe(documents[2]._id)
     expect(result.title).toBe('Bye')
   })
 
   it('Tom can see updated documents', async () => {
-    const results = await userTom.get('/api/post?sort=created')
+    const results = await userTom.get(`${API_PATH}?sort=created`)
     expect(results.length).toBe(2)
 
     expect(results[0].tag).toBe('public-read')
@@ -84,7 +85,7 @@ describe('acl', () => {
   })
 
   it('Jerry can see updated documents too', async () => {
-    const results = await userJerry.get('/api/post?sort=updated:-1')
+    const results = await userJerry.get(`${API_PATH}?sort=updated:-1`)
     expect(results.length).toBe(3)
 
     expect(results[0].tag).toBe('public-readwrite')

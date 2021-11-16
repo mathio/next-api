@@ -17,8 +17,8 @@ const buildUrl = (path, method, body = '{}') => {
 }
 
 const logoutUrl = buildUrl('/api/auth', 'del')
-const signupUrl = buildUrl('/api/auth', 'post', '{"email":"","pwd":""}')
-const loginUrl = buildUrl('/api/auth', 'put', '{"email":"","pwd":""}')
+const signupUrl = buildUrl('/api/auth', 'post', '{"email":"foo@example.com","pwd":"foobar"}')
+const loginUrl = buildUrl('/api/auth', 'put', '{"email":"foo@example.com","pwd":"foobar"}')
 
 const AuthInformation = ({ email }) => {
   if (email === null) {

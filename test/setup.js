@@ -25,7 +25,11 @@ const clearDatabase = async () => {
       }
 
       await client.close()
+
+      console.info('Database was cleared')
     })
 }
 
-clearDatabase()
+module.exports = () => {
+  clearDatabase()
+}

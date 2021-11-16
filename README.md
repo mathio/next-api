@@ -1,6 +1,6 @@
 # next-api
 
-[![Test](https://github.com/mathio/next-api/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/mathio/next-api/actions/workflows/test-and-release.yml) 
+[![Test](https://github.com/mathio/next-api/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/mathio/next-api/actions/workflows/test-and-release.yml)
 [![npm version](https://img.shields.io/npm/v/@mathio28/next-api?color=brightgreen)](https://www.npmjs.com/package/@mathio28/next-api)
 
 The "no api" api for Next.js apps.
@@ -13,8 +13,8 @@ yarn add @mathio28/next-api
 
 ## Requirements
 
-* node >= 12
-* next.js >= 10
+- node >= 12
+- next.js >= 10
 
 ## Usage
 
@@ -27,7 +27,7 @@ import nextApi from 'next-api'
 export default nextApi()
 ```
 
-Specify connection string URI in env variable `MONGODB_URL`.
+Specify connection string URL in env variable `MONGODB_URL`.
 
 ### Client-side
 
@@ -49,7 +49,7 @@ await del(`/api/card?id=${_id}`) // delete card
 await del('/api/auth') // logout
 ```
 
-This works in browser as it takes care of cookies automatically. If you want to make API requests server-side you will 
+This works in browser as it takes care of cookies automatically. If you want to make API requests server-side you will
 need to use `fetch` and persist auth cookie manually (named `"next-api-auth"` by default).
 
 ### Client-side with Typescript
@@ -65,7 +65,7 @@ interface Card {
 }
 
 const allCards = await get<Card[]>('/api/card')
-allCards.forEach(card => {
+allCards.forEach((card) => {
   card.title
   card.text
   card._id
@@ -77,11 +77,10 @@ allCards.forEach(card => {
   card.tag // TS2339: Property 'tag' does not exist on type 'Card'.
 })
 
-await post<Card>('/api/card', {title: 'bar', text: 'foo', tag: 1})
+await post<Card>('/api/card', { title: 'bar', text: 'foo', tag: 1 })
 // TS2345: Argument of type '{ title: string; text: string; tag: number; }' is not assignable to parameter of type 'Card'.
 //   Object literal may only specify known properties, and 'tag' does not exist in type 'Card'.
 ```
-
 
 ## Advanced usage
 
@@ -104,8 +103,7 @@ Available settings for security (integer):
 - `SECURITY.USER_SANDBOX` (1) - user can get, edit and delete only the documents they created
 - `SECURITY.READ_ALL` (2) - user can get all documents, but can edit and delete only documents they created
 
-You can override those settings for each record you save by setting `acl_read` and `acl_write` as an array of user ids. 
-
+You can override those settings for each record you save by setting `acl_read` and `acl_write` as an array of user ids.
 
 ## API Docs
 
@@ -123,7 +121,7 @@ When ID query param is specified `?id=<objectId>` it will return only the item, 
 
 Create a new item in given collection. Request body sent as JSON is saved.
 
-If request body is array multiple objects will be created (one for each object in the array). 
+If request body is array multiple objects will be created (one for each object in the array).
 
 Returns created item(s).
 
@@ -151,6 +149,16 @@ Returns number of deleted items.
 - `DELETE /api/auth` logout (delete token and cookie)
 
 When you login a HTTP-only cookie will be created with auth token.
+
+### Singleton collections `/api/one-<collection>`
+
+Collections starting with `one-` are considered singletons, eg. `/api/one-config`.
+
+You dont need to specify `id` when retrieving or saving the item, it will always retrieve, create or update one item.
+
+- `GET` returns object, not array
+- `PUT` creates new or updates existing item
+- `POST` and `DELETE` are not allowed
 
 ## Helper methods
 
