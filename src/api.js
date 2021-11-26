@@ -40,6 +40,14 @@ const processData = async (method, collection, data, db) => {
   return {}
 }
 
+const getCollectionFromRequest = (req) => {
+  if (req.query.collection) {
+    return req.query.collection
+  }
+  const match = req.url.match(/\/api\/([^/]+)/)
+  return match && match[1]
+}
+
 const makeApi = (config = {}, before, after) => {
   setConfig(config)
 
@@ -60,8 +68,10 @@ const makeApi = (config = {}, before, after) => {
       }
     }
 
-    const { collection, id, sort, ...query } = req.query
+    const { id, sort, ...query } = req.query
     const { _id, ...body } = req.body
+    const collection = getCollectionFromRequest(req)
+    delete query.collection
 
     const data = {
       query,
