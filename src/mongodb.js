@@ -73,15 +73,13 @@ export const updateOrCreate = async (collection, authObj, data) => {
   return value || {}
 }
 
-export const remove = async (collection, authObj, id) => {
+export const removeOne = async (collection, authObj, id) => {
   const client = await getCollectionClient(collection)
   const { deletedCount } = await client.deleteOne({
     _id: ObjectId(id),
     ...authObj,
   })
-  return {
-    deleted: deletedCount,
-  }
+  return deletedCount
 }
 
 export const removeMany = async (collection, authObj, ids) => {
@@ -90,7 +88,5 @@ export const removeMany = async (collection, authObj, ids) => {
     _id: { $in: ids.map((id) => ObjectId(id)) },
     ...authObj,
   })
-  return {
-    deleted: deletedCount,
-  }
+  return deletedCount
 }

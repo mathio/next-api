@@ -1,14 +1,6 @@
-import { getAll, getOne, insert, remove, removeMany, update, updateOrCreate } from './mongodb'
 import { getConfig, SECURITY, setConfig } from './config'
 import { auth, getUser } from './auth'
-
-const getAuthObjForRead = (userId) => {
-  return { acl_read: { $in: [userId, 'all'] } }
-}
-
-const getAuthObjForWrite = (userId) => {
-  return { acl_write: { $in: [userId, 'all'] } }
-}
+import { Database } from './database'
 
 const objectIsArray = (obj) => {
   const keys = Object.keys(obj).map((i) => parseInt(i, 10))
@@ -16,105 +8,79 @@ const objectIsArray = (obj) => {
   return JSON.stringify(keys) === JSON.stringify(arr)
 }
 
-const addAclToItem = (item, userId) => {
-  if (!item.acl_read || item.acl_read.length === 0) {
-    switch (getConfig().security) {
-      case SECURITY.NONE:
-      case SECURITY.READ_ALL:
-        item.acl_read = ['all']
-        break
-      case SECURITY.USER_SANDBOX:
-        item.acl_read = [userId]
-        break
-    }
-  }
-  if (!item.acl_write || item.acl_write.length === 0) {
-    switch (getConfig().security) {
-      case SECURITY.NONE:
-        item.acl_write = ['all']
-        break
-      case SECURITY.READ_ALL:
-      case SECURITY.USER_SANDBOX:
-        item.acl_write = [userId]
-        break
-    }
-  }
-  return item
-}
-
-const processData = async (method, collection, data) => {
+const processData = async (method, collection, data, db) => {
   const { query, sort, id, body = {}, userId } = data
 
-  const isSingletonCollection = collection.startsWith('data_one-')
-
   if (method === 'GET') {
-    const authObj = getAuthObjForRead(userId)
-    if (isSingletonCollection) {
-      return [200, await getOne(collection, authObj)]
-    } else if (id) {
-      return [200, await getOne(collection, authObj, id)]
-    } else {
-      return [200, await getAll(collection, authObj, query, sort)]
-    }
+    return [200, await db.find(collection, id || query, sort)]
   } else {
-    const authObj = getAuthObjForWrite(userId)
     if (getConfig().security !== SECURITY.NONE && !userId) {
       return [403, { error: 'forbidden' }]
     }
     if (method === 'POST') {
+      const isSingletonCollection = collection.startsWith('one-')
       if (isSingletonCollection) {
         return [400, { error: 'singleton, use put instead' }]
       } else if (objectIsArray(body)) {
-        const saved = []
-        const keys = Object.keys(body)
-        for (let i = 0; i < keys.length; i += 1) {
-          saved.push(await insert(collection, userId, addAclToItem(body[keys[i]], userId)))
-        }
-        return [200, saved]
+        return [200, await db.save(collection, Object.values(body), null)]
       } else {
-        return [200, await insert(collection, userId, addAclToItem(body, userId))]
+        return [200, await db.save(collection, body)]
       }
     } else if (method === 'PUT') {
-      if (isSingletonCollection) {
-        return [200, await updateOrCreate(collection, authObj, addAclToItem(body, userId))]
-      } else {
-        return [200, await update(collection, authObj, body, id)]
-      }
+      return [200, await db.save(collection, body, id)]
     } else if (method === 'DELETE') {
-      if (isSingletonCollection) {
+      const deleted = await db.remove(collection, id)
+      if (deleted === false) {
         return [400, { error: 'singleton, use put instead' }]
-      } else if (Array.isArray(id)) {
-        return [200, await removeMany(collection, authObj, id)]
       } else {
-        return [200, await remove(collection, authObj, id)]
+        return [200, { deleted }]
       }
     }
   }
   return {}
 }
 
-const makeApi = (config = {}) => {
+const makeApi = (config = {}, before, after) => {
   setConfig(config)
 
   return async (req, res) => {
-    const { collection, id, sort, ...query } = req.query
-    const { _id, ...body } = req.body
-
-    if (collection === 'auth') {
+    if (req.query.collection === 'auth') {
       return auth(req, res)
     }
 
     const user = await getUser(req)
+    const userId = user ? user._id.toString() : undefined
+
+    const db = new Database(user)
+
+    if (before) {
+      const canContinue = await before(req, res, db)
+      if (canContinue === false) {
+        return
+      }
+    }
+
+    const { collection, id, sort, ...query } = req.query
+    const { _id, ...body } = req.body
+
     const data = {
       query,
       sort,
       id: id || _id || null,
       body,
-      userId: user ? user._id.toString() : undefined,
+      userId,
     }
 
     try {
-      const [status, result] = await processData(req.method, `data_${collection}`, data)
+      const [status, result] = await processData(req.method, collection, data, db)
+
+      if (after) {
+        const canReturn = await after(req, res, db)
+        if (canReturn === false) {
+          return
+        }
+      }
+
       return res.status(status).json(result)
     } catch (error) {
       console.error(error)

@@ -1,7 +1,8 @@
-import { getAll, getOne, insert, remove, update } from './mongodb'
+import { getAll, getOne, insert, removeMany, removeOne, update } from './mongodb'
 import { getAuthCookie, setAuthCookie } from './cookies'
 import UIDGenerator from 'uid-generator'
 import { hashSync, genSaltSync, compareSync } from 'bcrypt'
+import { getConfig } from './config'
 const uidgen = new UIDGenerator(512)
 
 const generateToken = async () => {
@@ -13,10 +14,19 @@ const hashPassword = (password) => {
   return hashSync(password, genSaltSync(12))
 }
 
+const clearExpiredTokens = async () => {
+  const expireTime = Date.now() - getConfig().sessionTime
+  const expiredTokens = await getAll('user_auth_token', {}, { lastAccess: { $lt: expireTime } })
+  const ids = expiredTokens.map(({ _id }) => _id)
+  await removeMany('user_auth_token', {}, ids)
+}
+
 export const getUser = async (req) => {
+  await clearExpiredTokens()
   const [id, token] = getAuthCookie(req.cookies)
   if (id && token && id.length === 24) {
     const userAuthToken = await getOne('user_auth_token', {}, id)
+    await update('user_auth_token', {}, { lastAccess: Date.now() }, userAuthToken._id)
     if (userAuthToken.token && compareSync(token, userAuthToken.token)) {
       const { pwd, ...user } = await getOne('user', {}, userAuthToken.userId)
       return user
@@ -113,7 +123,7 @@ const loginUser = async (req, res) => {
 const logoutUser = async (req, res) => {
   const [id] = getAuthCookie(req.cookies)
   if (id && id.length === 24) {
-    const { deleted } = await remove('user_auth_token', {}, id)
+    const deleted = await removeOne('user_auth_token', {}, id)
     if (deleted) {
       setAuthCookie(req, res)
       return [200, {}]
@@ -135,6 +145,7 @@ const handleAuth = (req, res) => {
 }
 
 export const auth = async (req, res) => {
+  await clearExpiredTokens()
   const [code, result] = (await handleAuth(req, res)) || []
   if (code && result) {
     return res.status(200).json(result)

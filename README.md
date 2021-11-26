@@ -84,6 +84,8 @@ await post<Card>('/api/card', { title: 'bar', text: 'foo', tag: 1 })
 
 ## Advanced usage
 
+### Config
+
 You can pass config object to `nextApi()`:
 
 ```javascript
@@ -94,6 +96,7 @@ export default nextApi({
   mongoDbUrl: '<connection string URI>', // instead of MONGODB_URL env variable
   authCookieName: '<custom name>', // cookie name used for auth (defaults to "next-api-auth")
   security: SECURITY.USER_SANDBOX, // default security settings for database (0, 1, 2), defaults to 1 (SECURITY.USER_SANDBOX)
+  sessionTime: 24 * 60 * 60 * 1000, // session expiry time in milliseconds (since last request), defaults to 1 day
 })
 ```
 
@@ -104,6 +107,35 @@ Available settings for security (integer):
 - `SECURITY.READ_ALL` (2) - user can get all documents, but can edit and delete only documents they created
 
 You can override those settings for each record you save by setting `acl_read` and `acl_write` as an array of user ids.
+
+### Side effects
+
+You can supply 2 callbacks to execute custom logic for given route.
+
+```javascript
+import nextApi from '@mathio28/next-api'
+
+export default nextApi(
+  {},
+  async (req, res, db) => {
+    // executes BEFORE next-api logic
+
+    // check current user
+    console.log(db.user)
+
+    // access database, the db object it takes care of correct permissions
+    await db.find(collection, idOrQuery, sort)
+    await db.save(collection, body, id)
+    await db.remove(collection, id)
+
+    return false // prevents execution of default next-api logic for this route
+  },
+  (req, res, db) => {
+    // executes AFTER next-api logic
+    return false // prevents default response
+  }
+)
+```
 
 ## API Docs
 
