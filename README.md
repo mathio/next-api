@@ -112,6 +112,8 @@ You can override those settings for each record you save by setting `acl_read` a
 
 You can supply 2 callbacks to execute custom logic for given route.
 
+You can access the database via `Database` class provided as 3rd parameter.
+
 ```javascript
 import nextApi from '@mathio28/next-api'
 
@@ -136,6 +138,8 @@ export default nextApi(
   }
 )
 ```
+
+If you want to execute side effects for specific route only, you can set it up in `/api/my-route.js` instead of `/api/[collection].js`.
 
 ## API Docs
 
