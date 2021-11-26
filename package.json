@@ -21,6 +21,7 @@
     "dev": "next dev ./next-integration",
     "ci": "start-server-and-test dev http://localhost:3000 test",
     "test": "jest",
+    "clean": "rm -rf ./lib",
     "build": "babel src -d lib",
     "build:watch": "yarn build --watch",
     "prettier": "prettier --write . --ignore-path .gitignore",
@@ -44,9 +45,9 @@
     "start-server-and-test": "^1.11.5"
   },
   "dependencies": {
-    "bcrypt": "^5.0.0",
+    "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",
-    "mongodb": "^3.6.2",
+    "mongodb": "^4.2.0",
     "uid-generator": "^2.0.0"
   }
 }

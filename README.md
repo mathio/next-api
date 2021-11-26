@@ -143,7 +143,7 @@ export default nextApi(
 
 Returns array of all items from given collection.
 
-Sort by `sort` query param, eg. `?sort=date` ascending, `?sort=date:-1` descending.
+Sort by `sort` query param, eg. `?sort=date` ascending, `?sort=date:-1` descending. Default sort is `created:-1` (newest first).
 
 Filter by specifying additional query params, eg. `?age=18`.
 
